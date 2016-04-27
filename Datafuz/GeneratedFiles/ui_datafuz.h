@@ -55,7 +55,7 @@ public:
     QLabel *label_2;
     QLineEdit *lineEdit_2;
     QSpacerItem *horizontalSpacer_5;
-    QCheckBox *checkBox;
+    QCheckBox *plot_freq_check;
     QSpacerItem *horizontalSpacer_2;
     QPushButton *update_vibrations_opts;
     QSpacerItem *horizontalSpacer_4;
@@ -64,6 +64,10 @@ public:
     QHBoxLayout *layout_vib_checks;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
+    QVBoxLayout *verticalLayout_7;
+    QHBoxLayout *horizontalLayout_7;
+    QVBoxLayout *vib_time_plots_layout;
+    QVBoxLayout *vib_freq_plots_layout;
     QWidget *tab_2;
     QHBoxLayout *horizontalLayout_4;
     QVBoxLayout *verticalLayout_4;
@@ -159,10 +163,10 @@ public:
 
         horizontalLayout_6->addItem(horizontalSpacer_5);
 
-        checkBox = new QCheckBox(tab);
-        checkBox->setObjectName(QStringLiteral("checkBox"));
+        plot_freq_check = new QCheckBox(tab);
+        plot_freq_check->setObjectName(QStringLiteral("plot_freq_check"));
 
-        horizontalLayout_6->addWidget(checkBox);
+        horizontalLayout_6->addWidget(plot_freq_check);
 
         horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -201,6 +205,28 @@ public:
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
         scrollAreaWidgetContents->setGeometry(QRect(0, 0, 641, 324));
+        verticalLayout_7 = new QVBoxLayout(scrollAreaWidgetContents);
+        verticalLayout_7->setSpacing(6);
+        verticalLayout_7->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_7->setObjectName(QStringLiteral("verticalLayout_7"));
+        horizontalLayout_7 = new QHBoxLayout();
+        horizontalLayout_7->setSpacing(6);
+        horizontalLayout_7->setObjectName(QStringLiteral("horizontalLayout_7"));
+        vib_time_plots_layout = new QVBoxLayout();
+        vib_time_plots_layout->setSpacing(6);
+        vib_time_plots_layout->setObjectName(QStringLiteral("vib_time_plots_layout"));
+
+        horizontalLayout_7->addLayout(vib_time_plots_layout);
+
+        vib_freq_plots_layout = new QVBoxLayout();
+        vib_freq_plots_layout->setSpacing(6);
+        vib_freq_plots_layout->setObjectName(QStringLiteral("vib_freq_plots_layout"));
+
+        horizontalLayout_7->addLayout(vib_freq_plots_layout);
+
+
+        verticalLayout_7->addLayout(horizontalLayout_7);
+
         scrollArea->setWidget(scrollAreaWidgetContents);
 
         verticalLayout_3->addWidget(scrollArea);
@@ -280,7 +306,7 @@ public:
          << QApplication::translate("DatafuzClass", "7", 0)
         );
         label_2->setText(QApplication::translate("DatafuzClass", "Fs", 0));
-        checkBox->setText(QApplication::translate("DatafuzClass", "Plot frequency", 0));
+        plot_freq_check->setText(QApplication::translate("DatafuzClass", "Plot frequency", 0));
         update_vibrations_opts->setText(QApplication::translate("DatafuzClass", "Update", 0));
         sel_vib_channels_grbox->setTitle(QApplication::translate("DatafuzClass", "Selected Channels", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("DatafuzClass", "Vibrations", 0));

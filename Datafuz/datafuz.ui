@@ -159,7 +159,7 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="checkBox">
+                 <widget class="QCheckBox" name="plot_freq_check">
                   <property name="text">
                    <string>Plot frequency</string>
                   </property>
@@ -231,7 +231,14 @@
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_7">
                   <item>
-                   <layout class="QVBoxLayout" name="vib_plots_layout"/>
+                   <layout class="QHBoxLayout" name="horizontalLayout_7">
+                    <item>
+                     <layout class="QVBoxLayout" name="vib_time_plots_layout"/>
+                    </item>
+                    <item>
+                     <layout class="QVBoxLayout" name="vib_freq_plots_layout"/>
+                    </item>
+                   </layout>
                   </item>
                  </layout>
                 </widget>
