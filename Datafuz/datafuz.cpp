@@ -9,6 +9,10 @@
 #include <iostream>
 #include <fstream>
 
+#include <stdlib.h>
+#include <math.h>
+#include <fftw3.h>
+
 #define MAX_CHANNELS_N 9
 #define MAX_VIB_CHANNELS_N 7
 
@@ -44,27 +48,16 @@ Datafuz::Datafuz(QWidget *parent)
 	connect(ui.plot_freq_check, SIGNAL(stateChanged(int)), this, SLOT(updateFreqOpts(int)));
 
 	connect(signals_config_dialog_ui.apply_vib_config, SIGNAL(clicked()), this, SLOT(applyVibConfig()));
-	connect(signals_config_dialog_ui.default_vib_config, SIGNAL(clicked()), this, SLOT(defaultVibConfig()));
 
 	ui.sel_vib_channels_grbox->setVisible(false);
 	ui.layout_vib_checks->setAlignment(Qt::AlignCenter);	
-
-	ui.fs_val->setEnabled(false);
-	ui.fs_label->setEnabled(false);
-
-	QStringList channels_list = QStringList();
 	
-	for (int i = 0; i < MAX_CHANNELS_N; i++) {
-		channels_list << QString::number(i + 1);
-	}
-
 	for (int i = 0; i < MAX_VIB_CHANNELS_N; i++) {
 		QCheckBox * checkbox = new QCheckBox("Vib"+QString::number(i + 1));
 		checkbox->setChecked(true);
 		vib_channels_checks.push_back(checkbox);
 
-		QComboBox * combobox = new QComboBox();		
-		combobox->addItems(channels_list);
+		QComboBox * combobox = new QComboBox();				
 		combobox->setFixedWidth(30);
 		vib_channels_combos.push_back(combobox);
 
@@ -76,28 +69,23 @@ Datafuz::Datafuz(QWidget *parent)
 		vib_channels_edits.push_back(line_edit);
 
 		DatafuzPlot *timePlot = new DatafuzPlot();
-		timePlot->hideYValue();
-		plotTime(timePlot, line_edit->text(), QVector<double>(), QVector<double>(), 350);
+		timePlot->hideYValue();		
 		vib_channels_time_plots.push_back(timePlot);
 
 		DatafuzPlot *freqPlot = new DatafuzPlot();
-		freqPlot->hideYValue();
-		plotFreq(freqPlot, line_edit->text(), QVector<double>(), QVector<double>(), 350);
+		freqPlot->hideYValue();		
 		vib_channels_freq_plots.push_back(freqPlot);
-
-		/*QDoubleSpinBox * spinbox = new QDoubleSpinBox();
-		spinbox->setMinimum(-1000.00);
-		spinbox->setMaximum(1000.00);
-		spinbox->setValue(100.00);
-		spinbox->setFixedWidth(100);
-		vib_channels_sensitivities.push_back(spinbox);*/
 	}
 
 	val_hex_pos_max = 16777216.0;
 	val_volt_max = 5.0;
 	val_zero_volt = 2.5;
 
-	signals_data = new QVector<QVector<float>*>();
+	signals_time = new QVector<double>();
+	signals_data = new QVector<QVector<double>*>();
+
+	spectrums_time = new QVector<double>();
+	spectrums_data = new QVector<QVector<double>*>();
 
 	ui.signals_config_button->setEnabled(false);
 	ui.signals_tab_widget->setEnabled(false);
@@ -108,10 +96,13 @@ Datafuz::~Datafuz()
 
 }
 
-void Datafuz::plotTime(DatafuzPlot * timePlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height) {
+void Datafuz::plotTime(DatafuzPlot * timePlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height, QString x_legend, QString y_legend, double y_scaling) {
 	timePlot->clearGraphs();
 	timePlot->clearItems();
 	timePlot->clearPlottables();
+
+	timePlot->setNoAntialiasingOnDrag(false);
+
 	//timePlot->update();
 	//timePlot->setWindowTitle(title + " - Time");
 
@@ -119,15 +110,17 @@ void Datafuz::plotTime(DatafuzPlot * timePlot, const QString title, QVector<doub
 
 	// add two new graphs and set their look:
 	timePlot->addGraph();
-	timePlot->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph
-	timePlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue
+	timePlot->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph	
 
 	// configure right and top axis to show ticks but no labels:
 	// (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
-	timePlot->xAxis2->setVisible(true);
-	timePlot->xAxis2->setTickLabels(false);
-	timePlot->yAxis2->setVisible(true);
-	timePlot->yAxis2->setTickLabels(false);
+	timePlot->xAxis->setVisible(true);
+	timePlot->xAxis->setTickLabels(true);
+	timePlot->yAxis->setVisible(true);
+	timePlot->yAxis->setTickLabels(true);
+
+	timePlot->xAxis->setLabel(x_legend);
+	timePlot->yAxis->setLabel(y_legend);
 
 	// Note: we could have also just called timePlot->rescaleAxes(); instead
 	// Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
@@ -135,11 +128,25 @@ void Datafuz::plotTime(DatafuzPlot * timePlot, const QString title, QVector<doub
 
 	timePlot->setFixedHeight(fixed_height);
 
+	// Update sensivilities
+	for (int i = 0; i < y.size(); i++) {		
+		y[i] = (float)(y[i]*val_volt_max) / ((float)val_hex_pos_max);
+
+		if (y[i] >= val_zero_volt) {
+			y[i] += -val_volt_max;
+		}
+
+		y[i] = y[i] / y_scaling;
+	}
+
 	// pass data points to graphs:
 	timePlot->graph(0)->setData(x, y);
 
 	// let the ranges scale themselves so graph 0 fits perfectly in the visible area:
 	timePlot->graph(0)->rescaleAxes();
+	if (x.size() >= 3000) {
+		timePlot->xAxis->setRange(0, x[3000]);
+	}	
 
 	/*QCPLayoutElement * element = timePlot->plotLayout()->element(0, 0);
 
@@ -152,12 +159,43 @@ void Datafuz::plotTime(DatafuzPlot * timePlot, const QString title, QVector<doub
 	timePlot->replot();
 }
 
-void Datafuz::plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height) {
+QVector<double> computeFourier(double fs, QVector<double> y) {
+	double *out_fft, *in_fft;
+	fftw_plan p;
+
+	//Allocate memory for DFT
+	out_fft = (double*)fftw_malloc(sizeof(double) * fs);
+	in_fft = (double*)fftw_malloc(sizeof(double) * fs);
+	QVector<double> out_ffty;
+
+	//Set DFT plan (parameters)
+	p = fftw_plan_r2r_1d(fs, in_fft, out_fft, FFTW_R2HC, FFTW_ESTIMATE);
+
+	//Copy Input data to DFT data vector type
+	for (int i = 0; i<y.size(); i++)
+	{
+		in_fft[i] = y[i];
+	}
+
+	//Execute DFT
+	fftw_execute(p);
+
+	//Post-process (square and select positive side)
+	for (int i = 1; i < ((fs / 2)); i++)
+	{		
+		out_ffty.push_back(out_fft[i] * out_fft[i]);
+	}
+	
+	return out_ffty;
+}
+
+void Datafuz::plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height, QString x_legend, QString y_legend) {
 	freqPlot->clearGraphs();
 	freqPlot->clearItems();
 	freqPlot->clearPlottables();
 	//freqPlot->setWindowTitle(title + " - Freq");
-
+	
+	freqPlot->setNoAntialiasingOnDrag(false);
 	//freqPlot->plotLayout()->clear();
 
 	// create empty bar chart objects:
@@ -166,6 +204,9 @@ void Datafuz::plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<doub
 
 	freqPlot->xAxis->setVisible(true);
 	freqPlot->yAxis->setVisible(true);
+
+	freqPlot->xAxis->setLabel(x_legend);
+	freqPlot->yAxis->setLabel(y_legend);
 	// set names and colors:
 	QPen pen;
 	pen.setWidthF(1);
@@ -176,6 +217,10 @@ void Datafuz::plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<doub
 
 	freq->setData(x, y);
 	freqPlot->rescaleAxes();
+
+	if (x.size() >= 1000) {
+		freqPlot->xAxis->setRange(0, 1000);
+	}	
 
 	freqPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
@@ -232,10 +277,10 @@ void clearItems(QLayout *layout) {
 			//	layout->removeItem(item);				
 			//	continue;
 			//}*/
-			//if (item != NULL && item->widget()) {
-			//	layout->removeWidget(item->widget());
-			//	//continue;
-			//}
+			if (item != NULL && item->widget()) {
+				layout->removeWidget(item->widget());
+				//continue;
+			}
 			//if (item != NULL) {
 			//	layout->removeItem(item);
 			//}
@@ -265,7 +310,7 @@ void clearRows(QFormLayout *layout) {
 }
 
 void Datafuz::loadSignalsFile(void) {
-	QString adq_file_path = QFileDialog::getOpenFileName(this, tr("Load signals file..."), ".", tr("Binary files (*.bin, *.BIN);; Text files (*.txt, *.TXT)"));
+	QString adq_file_path = QFileDialog::getOpenFileName(this, tr("Load signals file..."), ".", tr("Text files (*.txt, *.TXT);; Binary files (*.bin, *.BIN)"));
 
 	if (adq_file_path == NULL) {
 		QMessageBox::warning(this, "Warning", "You must select a path for signals file!");
@@ -275,21 +320,42 @@ void Datafuz::loadSignalsFile(void) {
 	ui.signals_file_path->setText(adq_file_path);
 
 	if (adq_file_path.endsWith(".bin") || adq_file_path.endsWith(".BIN")) {
-		n_channels = QInputDialog::getInt(this, "Number of vibration channels", "Please provide number of vibration channels in signals file:", 7);
+		bool ok;
+		n_channels = QInputDialog::getInt(this, "Number of vibration channels", "Please provide number of vibration channels in signals file:", 7, NUMBER_OF_MIN_ADQ_CHANNELS, NUMBER_OF_MAX_ADQ_CHANNELS, 1, &ok);
+
+		if (!ok)
+			return;
 
 		if (n_channels < NUMBER_OF_MIN_ADQ_CHANNELS || n_channels > NUMBER_OF_MAX_ADQ_CHANNELS) {
 			QMessageBox::critical(this, "Error", "Number of vibrations channels must be between " + QString::number(NUMBER_OF_MIN_ADQ_CHANNELS) + " and " + QString::number(NUMBER_OF_MAX_ADQ_CHANNELS) +"!");
 			return;
 		}
 
-		n_seconds = QInputDialog::getInt(this, "Number of seconds of vibration signals", "Please provide number of seconds of vibrations signals", 1);
+		ui.vib_channel_n->clear();
+
+		QStringList channels_list = QStringList();
+
+		for (int i = 0; i < n_channels; i++) {
+			channels_list << QString::number(i + 1);
+		}
+
+		ui.vib_channel_n->addItems(channels_list);
+
+		n_seconds = QInputDialog::getInt(this, "Number of seconds of vibration signals", "Please provide number of seconds of vibrations signals", 1, NUMBER_OF_MIN_ADQ_SECONDS, NUMBER_OF_MAX_ADQ_SECONDS, 1, &ok);
+
+		if (!ok)
+			return;
 
 		if (n_seconds < NUMBER_OF_MIN_ADQ_SECONDS || n_seconds > NUMBER_OF_MAX_ADQ_SECONDS) {
 			QMessageBox::critical(this, "Error", "Number of seconds of vibration signals must be between " + QString::number(NUMBER_OF_MIN_ADQ_SECONDS) + " and " + QString::number(NUMBER_OF_MAX_ADQ_SECONDS) + "!");
 			return;
 		}
 
+		signals_time->clear();
 		signals_data->clear();
+
+		spectrums_time->clear();
+		spectrums_data->clear();
 
 		QString adq_file_txt_path = adq_file_path.section(".", 0, 0) + ".txt";
 
@@ -306,11 +372,14 @@ void Datafuz::loadSignalsFile(void) {
 		unsigned int step_counter = 0;
 		unsigned int step_max = n_seconds*n_channels*ADQ_SAMPLES_PER_SECOND;
 
-		QProgressDialog *reading_progress = new QProgressDialog("Leyendo archivo ADQ...", "Cancelar", 0, step_max, this);
+		QProgressDialog *reading_progress = new QProgressDialog("Reading signals file...", "Cancel", 0, step_max, this);
 		reading_progress->setWindowModality(Qt::WindowModal);
-		reading_progress->setWindowTitle("Leyendo...");
+		reading_progress->setWindowTitle("Reading...");
 
 		reading_progress->setValue(0);
+
+		// Read number of seconds
+		//infile.read((char *)&buffer, sizeof(buffer));
 
 		for (unsigned short k = 0; k<n_seconds; k++) {
 			QVector<QVector<int>> *seconds_bytes = new QVector<QVector<int>>();
@@ -333,15 +402,12 @@ void Datafuz::loadSignalsFile(void) {
 		}
 
 		reading_progress->setValue(step_max);
-
-		QVector<QVector<QVector<float>>> *scaled_bytes = new QVector<QVector<QVector<float>>>();
-		scaleData(total_bytes, scaled_bytes);
-
+		
 		step_counter = 0;
 
-		QProgressDialog *saving_progress = new QProgressDialog("Guardando datos procesados...", "Cancelar", 0, step_max, this);
+		QProgressDialog *saving_progress = new QProgressDialog("Saving processed data...", "Cancel", 0, step_max, this);
 		saving_progress->setWindowModality(Qt::WindowModal);
-		saving_progress->setWindowTitle("Guardando...");
+		saving_progress->setWindowTitle("Saving...");
 
 		saving_progress->setValue(0);
 
@@ -352,17 +418,38 @@ void Datafuz::loadSignalsFile(void) {
 			delete signals_data->at(i);
 		}
 
+		// Free spectrums_data.
+		for (int i = 0; i < spectrums_data->size(); i++) {
+			delete spectrums_data->at(i);
+		}
+
+		signals_time->clear();
 		signals_data->clear();
+
+		spectrums_time->clear();
+		spectrums_data->clear();
 		
 		// Init signals data.
 		for (int j = 0; j < n_channels; j++) {
-			signals_data->push_back(new QVector<float>());
+			signals_data->push_back(new QVector<double>());
+		}
+
+		// Init spectrums data.
+		for (int j = 0; j < n_channels; j++) {
+			spectrums_data->push_back(new QVector<double>());
+		}
+
+		vib_fs = signals_config_dialog_ui.fs_val->value();
+		double fs_step = 1 / vib_fs;
+
+		for (int i = 0; i < n_seconds*ADQ_SAMPLES_PER_SECOND; i++) {
+			signals_time->push_back(i*fs_step);
 		}
 
 		for (unsigned short k = 0; k<n_seconds; k++) {
 			for (int i = 0; i<ADQ_SAMPLES_PER_SECOND; i++) {
 				for (int j = 0; j<n_channels; j++) {					
-					float value = scaled_bytes->at(k).at(j).at(i);
+					float value = total_bytes->at(k).at(j).at(i);
 					sprintf(printf_buffer, "%f\t", value);
 					signals_data->at(j)->push_back(value);
 					outfile << printf_buffer;
@@ -381,21 +468,74 @@ void Datafuz::loadSignalsFile(void) {
 		outfile.close();
 		infile.close();
 
-		QMessageBox::information(this, "Informacion", "Archivo ADQ procesado con éxito!");		
+		QMessageBox::information(this, "Information", "Signals file successfully processed!");
 
 		clearLayout(signals_config_dialog_ui.channel_sensitivities_layout);
 		vib_channels_sensitivities.clear();
 
 		for (int i = 0; i < n_channels; i++) {			
 			QDoubleSpinBox * spinbox = new QDoubleSpinBox();
-			spinbox->setMinimum(-1000.00);
-			spinbox->setMaximum(1000.00);
+			spinbox->setMinimum(0.1);
+			spinbox->setMaximum(2000);
 			spinbox->setValue(100.00);
 			spinbox->setFixedWidth(100);
 			vib_channels_sensitivities.push_back(spinbox);
 			signals_config_dialog_ui.channel_sensitivities_layout->addRow("Channel " + QString::number(i + 1), vib_channels_sensitivities.at(i));
-		}		
+		}
+
+		spectrums_time->clear();
+
+		for (int i = 1; i < ((vib_fs / 2)); i++) {
+			spectrums_time->push_back(i);
+		}
+
+		for (int i = 0; i < n_channels; i++) {
+			QVector<double> spectrum = computeFourier(vib_fs, *signals_data->at(i));
+
+			spectrums_data->at(i)->clear();
+
+			for (int m = 0; m < spectrum.size(); m++) {
+				spectrums_data->at(i)->push_back(spectrum.at(m));
+			}
+		}
+
+		clearLayout(ui.layout_vib_checks);
+		vib_channels_checks.clear();
+		vib_channels_combos.clear();
+		vib_channels_spaces.clear();
+		vib_channels_edits.clear();
+
+		for (int i = 0; i < n_channels; i++) {
+			QCheckBox * checkbox = new QCheckBox("Vib" + QString::number(i + 1));
+			checkbox->setChecked(true);
+			vib_channels_checks.push_back(checkbox);
+
+			QComboBox * combobox = new QComboBox();
+			combobox->setFixedWidth(30);
+			vib_channels_combos.push_back(combobox);
+
+			QSpacerItem * spacer = new QSpacerItem(20, 30, QSizePolicy::Expanding, QSizePolicy::Fixed);
+			vib_channels_spaces.push_back(spacer);
+
+			QLineEdit * line_edit = new QLineEdit("Channel " + QString::number(i + 1));
+			line_edit->setFixedWidth(60);
+			vib_channels_edits.push_back(line_edit);			
+		}
+
+		for (int i = 0; i < n_channels; i++) {
+			vib_channels_combos.at(i)->clear();
+			vib_channels_combos.at(i)->addItems(channels_list);
+			vib_channels_combos.at(i)->setCurrentIndex(i);
+		}
+
+		clearLayout(ui.vib_time_plots_layout);
+		clearLayout(ui.vib_freq_plots_layout);
+
 		ui.signals_config_button->setEnabled(true);
+		ui.sel_vib_channels_grbox->setVisible(false);
+		ui.layout_vib_checks->setAlignment(Qt::AlignCenter);
+		
+		ui.signals_tab_widget->setEnabled(false);
 	}
 	else if (adq_file_path.endsWith(".txt") || adq_file_path.endsWith(".TXT")) {
 		QProgressBar * progressBar = new QProgressBar(this);
@@ -428,19 +568,38 @@ void Datafuz::loadSignalsFile(void) {
 				return;
 			}
 
+			ui.vib_channel_n->clear();
+
+			QStringList channels_list = QStringList();
+
+			for (int i = 0; i < n_channels; i++) {
+				channels_list << QString::number(i + 1);
+			}
+
+			ui.vib_channel_n->addItems(channels_list);
+
 			// Free signals_data.
 			for (int i = 0; i < signals_data->size(); i++) {				
 				delete signals_data->at(i);
 			}
 
+			signals_time->clear();
 			signals_data->clear();
+
+			spectrums_time->clear();
+			spectrums_data->clear();
 
 			// Init signals data.
 			for (int j = 0; j < n_channels; j++) {
-				signals_data->push_back(new QVector<float>());
+				signals_data->push_back(new QVector<double>());
 			}
 
-			QRegExp rx("(\\d+\\.\\d+)");			
+			// Init spectrums data.
+			for (int j = 0; j < n_channels; j++) {
+				spectrums_data->push_back(new QVector<double>());
+			}
+
+			QRegExp rx("(-?\\d+\\.\\d+)");			
 			QStringList list;
 			int pos = 0;
 
@@ -458,7 +617,7 @@ void Datafuz::loadSignalsFile(void) {
 				// Process str
 				line_counter++;
 
-				QRegExp rx("(\\d+\\.\\d+)");
+				QRegExp rx("(-?\\d+\\.\\d+)");
 				QStringList list;
 				int pos = 0;
 
@@ -484,6 +643,13 @@ void Datafuz::loadSignalsFile(void) {
 				return;
 			}
 
+			vib_fs = signals_config_dialog_ui.fs_val->value();
+			double fs_step = 1 / vib_fs;
+
+			for (int i = 0; i < n_seconds*ADQ_SAMPLES_PER_SECOND; i++) {
+				signals_time->push_back(i*fs_step);
+			}			
+
 			progress.cancel();
 			QMessageBox::information(this, "Text file successfully processed", "Text file successfully processed for " + QString::number(n_channels) + " channels and " + QString::number(n_seconds) +" seconds!");	
 
@@ -492,14 +658,68 @@ void Datafuz::loadSignalsFile(void) {
 
 			for (int i = 0; i < n_channels; i++) {
 				QDoubleSpinBox * spinbox = new QDoubleSpinBox();
-				spinbox->setMinimum(-1000.00);
-				spinbox->setMaximum(1000.00);
+				spinbox->setMinimum(0.1);
+				spinbox->setMaximum(2000);
 				spinbox->setValue(100.00);
 				spinbox->setFixedWidth(100);
 				vib_channels_sensitivities.push_back(spinbox);
 				signals_config_dialog_ui.channel_sensitivities_layout->addRow("Channel " + QString::number(i + 1), vib_channels_sensitivities.at(i));
+			}						
+
+			spectrums_time->clear();
+
+			for (int i = 1; i < ((vib_fs / 2)); i++) {
+				spectrums_time->push_back(i);
 			}
+
+			for (int i = 0; i < n_channels; i++) {
+				QVector<double> spectrum = computeFourier(vib_fs, *signals_data->at(i));
+
+				spectrums_data->at(i)->clear();
+
+				for (int m = 0; m < spectrum.size(); m++) {
+					spectrums_data->at(i)->push_back(spectrum.at(m));
+				}
+			}
+
+			clearLayout(ui.layout_vib_checks);
+			vib_channels_checks.clear();
+			vib_channels_combos.clear();
+			vib_channels_spaces.clear();
+			vib_channels_edits.clear();
+
+			for (int i = 0; i < n_channels; i++) {
+				QCheckBox * checkbox = new QCheckBox("Vib" + QString::number(i + 1));
+				checkbox->setChecked(true);
+				vib_channels_checks.push_back(checkbox);
+
+				QComboBox * combobox = new QComboBox();
+				combobox->setFixedWidth(30);
+				vib_channels_combos.push_back(combobox);
+
+				QSpacerItem * spacer = new QSpacerItem(20, 30, QSizePolicy::Expanding, QSizePolicy::Fixed);
+				vib_channels_spaces.push_back(spacer);
+
+				QLineEdit * line_edit = new QLineEdit("Channel " + QString::number(i + 1));
+				line_edit->setFixedWidth(60);
+				vib_channels_edits.push_back(line_edit);
+			}
+
+			for (int i = 0; i < n_channels; i++) {
+				vib_channels_combos.at(i)->clear();
+				vib_channels_combos.at(i)->addItems(channels_list);
+				vib_channels_combos.at(i)->setCurrentIndex(i);
+			}
+
+			clearLayout(ui.vib_time_plots_layout);
+			clearLayout(ui.vib_freq_plots_layout);
+
 			ui.signals_config_button->setEnabled(true);
+			ui.signals_config_button->setEnabled(true);
+			ui.sel_vib_channels_grbox->setVisible(false);
+			ui.layout_vib_checks->setAlignment(Qt::AlignCenter);
+			
+			ui.signals_tab_widget->setEnabled(false);
 		} else {
 			progress.cancel();
 			QMessageBox::warning(this, "Warning", "First line of .txt file empty!");			
@@ -509,45 +729,8 @@ void Datafuz::loadSignalsFile(void) {
 }
 
 void Datafuz::showSignalsConfig() {		
-	signals_config_dialog->show();	
-}
-
-void Datafuz::scaleData(QVector<QVector<QVector<int>>> *total_bytes, QVector<QVector<QVector<float>>> *scaled_bytes) {	
-	unsigned short n_seconds = total_bytes->size();
-	unsigned short n_channels = total_bytes->at(0).size();
-
-	unsigned int step_counter = 0;
-	unsigned int step_max = n_seconds*n_channels*ADQ_SAMPLES_PER_SECOND;
-
-	QProgressDialog *scaling_progress = new QProgressDialog("Escalando datos...", "Cancelar", 0, step_max, this);
-	scaling_progress->setWindowModality(Qt::WindowModal);
-	scaling_progress->setWindowTitle("Escalando...");
-
-	scaling_progress->setValue(0);
-
-	for (unsigned short k = 0; k<n_seconds; k++) {
-		QVector<QVector<float>> *second_bytes = new QVector<QVector<float>>();
-		for (unsigned char j = 0; j<n_channels; j++) {
-			QVector<float> *channel_bytes = new QVector<float>();
-			for (unsigned int i = 0; i<ADQ_SAMPLES_PER_SECOND; i++) {
-				float valor_escalado = (float)(total_bytes->at(k).at(j).at(i)*val_volt_max) / ((float)val_hex_pos_max);
-
-				if (valor_escalado >= val_zero_volt) {
-					valor_escalado += -val_volt_max;
-				}
-
-				channel_bytes->push_back(valor_escalado);
-
-				scaling_progress->setValue(step_counter++);
-
-				if (scaling_progress->wasCanceled())
-					break;
-			}
-			second_bytes->push_back(*channel_bytes);
-		}
-		scaled_bytes->push_back(*second_bytes);
-	}
-	scaling_progress->setValue(step_max);
+	signals_config_dialog->show();		
+	signals_config_dialog->move(QPoint(signals_config_dialog->pos().x(), signals_config_dialog->pos().y() - n_channels * 10));
 }
 
 //void clearWidgets(QLayout *layout) {
@@ -613,12 +796,12 @@ void Datafuz::updateVibrationsOpts() {
 	progress.setValue(0);
 	QApplication::processEvents();			
 
-	ui.sel_vib_channels_grbox->setVisible(true);
+	ui.sel_vib_channels_grbox->setVisible(true);	
 
-	int vib_channels_n = ui.vib_channel_n->currentIndex() + 1;
+	int vib_channels_n = ui.vib_channel_n->currentIndex() + 1;	
 
 	// Remove elements from layouts
-	for (int i = 0; i < MAX_VIB_CHANNELS_N; i++) {
+	for (int i = 0; i < n_channels; i++) {
 		vib_channels_checks.at(i)->setVisible(false);
 		vib_channels_combos.at(i)->setVisible(false);
 		vib_channels_edits.at(i)->setVisible(false);
@@ -632,7 +815,7 @@ void Datafuz::updateVibrationsOpts() {
 		ui.layout_vib_checks->addSpacerItem(vib_channels_spaces.at(i));
 		vib_channels_checks.at(i)->setVisible(true);
 		ui.layout_vib_checks->addWidget(vib_channels_checks.at(i));
-		vib_channels_combos.at(i)->setVisible(true);
+		vib_channels_combos.at(i)->setVisible(true);		
 		ui.layout_vib_checks->addWidget(vib_channels_combos.at(i));
 		vib_channels_edits.at(i)->setVisible(true);
 		ui.layout_vib_checks->addWidget(vib_channels_edits.at(i));
@@ -643,21 +826,21 @@ void Datafuz::updateVibrationsOpts() {
 			
 	clearLayout(ui.vib_time_plots_layout);
 	clearLayout(ui.vib_freq_plots_layout);
+
+	vib_fs = signals_config_dialog_ui.fs_val->value();
+
+	spectrums_time->clear();
+
+	for (int i = 1; i < ((vib_fs / 2)); i++) {
+		spectrums_time->push_back(i);
+	}
 		
 	for (int j = 0; j < vib_channels_n; j++) {
 		if (vib_channels_checks.at(j)->isChecked()) {
 			DatafuzPlot * timePlot = vib_channels_time_plots[j];
-			
-			// generate some points of data (y0 for first, y1 for second graph):
-			QVector<double> x(250), y0(250), y1(250);
-			for (int i = 0; i<250; ++i)
-			{
-				x[i] = i;
-				y0[i] = qExp(-i / 150.0)*qCos(i / 10.0); // exponentially decaying cosine
-				y1[i] = qExp(-i / 150.0);              // exponential envelope
-			}
-					
-			//delete timePlot;
+						
+			int currentIndex = vib_channels_combos.at(j)->currentIndex();
+
 			vib_channels_time_plots[j] = new DatafuzPlot();
 			timePlot = vib_channels_time_plots[j];
 			if (ui.show_x_vals_check->isChecked()) {
@@ -672,36 +855,11 @@ void Datafuz::updateVibrationsOpts() {
 			else {
 				timePlot->hideYValue();
 			}
-
-			plotTime(timePlot, vib_channels_edits.at(j)->text(), x, y0, 350);
+			
+			plotTime(timePlot, vib_channels_edits.at(j)->text(), *signals_time, *signals_data->at(currentIndex), 350, "Time (s)", "Amplitude (g)", vib_channels_sensitivities.at(currentIndex)->value()/1000);
 
 			if (ui.plot_freq_check->isChecked()) {
-				DatafuzPlot *freqPlot = vib_channels_freq_plots[j];
-				
-				// generate ideal sinc curve data and some randomly perturbed data for scatter plot:
-				QVector<double> x0(250), y0(250);
-				QVector<double> yConfUpper(250), yConfLower(250);
-				for (int i = 0; i<250; ++i)
-				{
-					x0[i] = (i / 249.0 - 0.5) * 30 + 0.01; // by adding a small offset we make sure not do divide by zero in next code line
-					y0[i] = qSin(x0[i]) / x0[i]; // sinc function
-					yConfUpper[i] = y0[i] + 0.15;
-					yConfLower[i] = y0[i] - 0.15;
-					x0[i] *= 1000;
-				}
-				QVector<double> x1(50), y1(50), y1err(50);
-				for (int i = 0; i<50; ++i)
-				{
-					// generate a gaussian distributed random number:
-					double tmp1 = rand() / (double)RAND_MAX;
-					double tmp2 = rand() / (double)RAND_MAX;
-					double r = qSqrt(-2 * qLn(tmp1))*qCos(2 * M_PI*tmp2); // box-muller transform for gaussian distribution
-					// set y1 to value of y0 plus a random gaussian pertubation:
-					x1[i] = (i / 50.0 - 0.5) * 30 + 0.25;
-					y1[i] = qSin(x1[i]) / x1[i] + r*0.15;
-					x1[i] *= 1000;
-					y1err[i] = 0.15;
-				}
+				DatafuzPlot *freqPlot = vib_channels_freq_plots[j];								
 				
 				vib_channels_freq_plots[j] = new DatafuzPlot();
 				freqPlot = vib_channels_freq_plots[j];
@@ -719,35 +877,28 @@ void Datafuz::updateVibrationsOpts() {
 					freqPlot->hideYValue();
 				}
 
-				plotFreq(freqPlot, vib_channels_edits.at(j)->text(), x1, y1, 350);
+				plotFreq(freqPlot, vib_channels_edits.at(j)->text(), *spectrums_time, *spectrums_data->at(currentIndex), 350, "Freq (Hz)", "");
 
 				ui.vib_time_plots_layout->addWidget(timePlot);
 				ui.vib_freq_plots_layout->addWidget(freqPlot);				
 			} else {
 				ui.vib_time_plots_layout->addWidget(timePlot);
 			}
-		}		
+		}
 	}
 	progress.cancel();
 }
 
-void Datafuz::updateFreqOpts(int state) {
-	if (state == Qt::Unchecked) {
-		ui.fs_val->setEnabled(false);
-		ui.fs_label->setEnabled(false);
-	}
-	else if (state == Qt::Checked) {
-		ui.fs_val->setEnabled(true);
-		ui.fs_label->setEnabled(true);
-	}
+void Datafuz::updateFreqOpts(int state) {	
 }
 
 void Datafuz::applyVibConfig(void) {
-	ui.signals_tab_widget->setEnabled(true);
-	signals_config_dialog->hide();
-}
+	val_hex_pos_max = signals_config_dialog_ui.maxADCPositionSpinBox->value();
+	val_volt_max = signals_config_dialog_ui.maxVoltDoubleSpinBox->value();
+	val_zero_volt = signals_config_dialog_ui.minVoltDoubleSpinBox->value();	
 
-void Datafuz::defaultVibConfig(void) {
 	ui.signals_tab_widget->setEnabled(true);
+	
 	signals_config_dialog->hide();
+	signals_config_dialog->move(QPoint(signals_config_dialog->pos().x(), signals_config_dialog->pos().y() + n_channels * 10));
 }

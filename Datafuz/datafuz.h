@@ -24,10 +24,16 @@ private:
 	float val_volt_max;
 	float val_zero_volt;
 
+	double vib_fs;
+
 	int n_channels;
 	int n_seconds;
 	
-	QVector<QVector<float>*> *signals_data;
+	QVector<double>* signals_time;
+	QVector<QVector<double>*> *signals_data;
+
+	QVector<double>* spectrums_time;
+	QVector<QVector<double>*> *spectrums_data;
 
 	QVector<QCheckBox*> vib_channels_checks;
 	QVector<QComboBox*> vib_channels_combos;
@@ -38,10 +44,9 @@ private:
 	QVector<DatafuzPlot*> vib_channels_freq_plots;
 
 	QVector<QDoubleSpinBox*> vib_channels_sensitivities;
-
-	void scaleData(QVector<QVector<QVector<int>>> *total_bytes, QVector<QVector<QVector<float>>> *scaled_bytes);
-	void plotTime(DatafuzPlot * timePlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height);
-	void plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height);
+	
+	void plotTime(DatafuzPlot * timePlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height, QString x_legend, QString y_legend, double y_scaling);
+	void plotFreq(DatafuzPlot * freqPlot, const QString title, QVector<double> x, QVector<double> y, int fixed_height, QString x_legend, QString y_legend);
 
 private slots:
 	void loadSignalsFile(void);
@@ -49,8 +54,7 @@ private slots:
 	void updateVibrationsOpts(void);
 	void updateFreqOpts(int);
 
-	void applyVibConfig(void);
-	void defaultVibConfig(void);
+	void applyVibConfig(void);	
 };
 
 #endif // DATAFUZ_H

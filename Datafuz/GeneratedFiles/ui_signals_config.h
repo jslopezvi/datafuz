@@ -38,9 +38,17 @@ public:
     QWidget *tab;
     QVBoxLayout *verticalLayout_4;
     QVBoxLayout *verticalLayout_3;
+    QGroupBox *groupBox_3;
+    QVBoxLayout *verticalLayout_5;
+    QHBoxLayout *horizontalLayout_6;
+    QSpacerItem *horizontalSpacer_7;
+    QLabel *label;
+    QSpinBox *fs_val;
+    QSpacerItem *horizontalSpacer_8;
     QGroupBox *groupBox;
     QHBoxLayout *horizontalLayout_4;
     QHBoxLayout *horizontalLayout_5;
+    QSpacerItem *horizontalSpacer_2;
     QFormLayout *formLayout;
     QLabel *maxADCPositionLabel_2;
     QSpinBox *maxADCPositionSpinBox;
@@ -51,14 +59,14 @@ public:
     QSpacerItem *horizontalSpacer_6;
     QGroupBox *groupBox_2;
     QHBoxLayout *horizontalLayout;
-    QVBoxLayout *verticalLayout_5;
+    QHBoxLayout *horizontalLayout_2;
+    QSpacerItem *horizontalSpacer_4;
     QFormLayout *channel_sensitivities_layout;
+    QSpacerItem *horizontalSpacer_5;
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer;
     QPushButton *apply_vib_config;
     QSpacerItem *horizontalSpacer_3;
-    QPushButton *default_vib_config;
-    QSpacerItem *horizontalSpacer_2;
     QWidget *tab_2;
     QWidget *tab_3;
 
@@ -80,6 +88,42 @@ public:
         verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
         verticalLayout_3 = new QVBoxLayout();
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
+        groupBox_3 = new QGroupBox(tab);
+        groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
+        verticalLayout_5 = new QVBoxLayout(groupBox_3);
+        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        horizontalLayout_6 = new QHBoxLayout();
+        horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
+        horizontalSpacer_7 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer_7);
+
+        label = new QLabel(groupBox_3);
+        label->setObjectName(QStringLiteral("label"));
+
+        horizontalLayout_6->addWidget(label);
+
+        fs_val = new QSpinBox(groupBox_3);
+        fs_val->setObjectName(QStringLiteral("fs_val"));
+        fs_val->setMinimumSize(QSize(100, 0));
+        fs_val->setMaximumSize(QSize(100, 16777215));
+        fs_val->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        fs_val->setMinimum(1);
+        fs_val->setMaximum(99999);
+        fs_val->setValue(52734);
+
+        horizontalLayout_6->addWidget(fs_val);
+
+        horizontalSpacer_8 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer_8);
+
+
+        verticalLayout_5->addLayout(horizontalLayout_6);
+
+
+        verticalLayout_3->addWidget(groupBox_3);
+
         groupBox = new QGroupBox(tab);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         groupBox->setMaximumSize(QSize(16777215, 200));
@@ -88,6 +132,10 @@ public:
         horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_5->addItem(horizontalSpacer_2);
+
         formLayout = new QFormLayout();
         formLayout->setObjectName(QStringLiteral("formLayout"));
         formLayout->setLabelAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
@@ -166,15 +214,23 @@ public:
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         horizontalLayout = new QHBoxLayout(groupBox_2);
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        verticalLayout_5 = new QVBoxLayout();
-        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        horizontalSpacer_4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_2->addItem(horizontalSpacer_4);
+
         channel_sensitivities_layout = new QFormLayout();
         channel_sensitivities_layout->setObjectName(QStringLiteral("channel_sensitivities_layout"));
 
-        verticalLayout_5->addLayout(channel_sensitivities_layout);
+        horizontalLayout_2->addLayout(channel_sensitivities_layout);
+
+        horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_2->addItem(horizontalSpacer_5);
 
 
-        horizontalLayout->addLayout(verticalLayout_5);
+        horizontalLayout->addLayout(horizontalLayout_2);
 
 
         verticalLayout_4->addWidget(groupBox_2);
@@ -193,15 +249,6 @@ public:
         horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout_3->addItem(horizontalSpacer_3);
-
-        default_vib_config = new QPushButton(tab);
-        default_vib_config->setObjectName(QStringLiteral("default_vib_config"));
-
-        horizontalLayout_3->addWidget(default_vib_config);
-
-        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        horizontalLayout_3->addItem(horizontalSpacer_2);
 
 
         verticalLayout_4->addLayout(horizontalLayout_3);
@@ -231,13 +278,14 @@ public:
     void retranslateUi(QDialog *Dialog)
     {
         Dialog->setWindowTitle(QApplication::translate("Dialog", "Signals Configuration", 0));
+        groupBox_3->setTitle(QApplication::translate("Dialog", "Sampling Frequency", 0));
+        label->setText(QApplication::translate("Dialog", "Fs", 0));
         groupBox->setTitle(QApplication::translate("Dialog", "Voltage Scaling", 0));
         maxADCPositionLabel_2->setText(QApplication::translate("Dialog", "Max ADC Position", 0));
         maxVoltLabel->setText(QApplication::translate("Dialog", "Max Volt Value", 0));
         minVoltLabel->setText(QApplication::translate("Dialog", "Zero Volt Value", 0));
         groupBox_2->setTitle(QApplication::translate("Dialog", "Channels Sensitivity (mV/g)", 0));
         apply_vib_config->setText(QApplication::translate("Dialog", "Apply Vibration Configuration", 0));
-        default_vib_config->setText(QApplication::translate("Dialog", "Restore Vibration Configuration to Defaults", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("Dialog", "Vibration", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("Dialog", "Flow", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("Dialog", "Load && Pressure", 0));

@@ -1,0 +1,313 @@
+############################################################################################
+#      NSIS Installation Script created by NSIS Quick Setup Script Generator v1.09.18
+#               Entirely Edited with NullSoft Scriptable Installation System                
+#              by Vlasis K. Barkas aka Red Wine red_wine@freemail.gr Sep 2006               
+############################################################################################
+
+!define APP_NAME "Datafuz"
+!define COMP_NAME "Vibrations"
+!define VERSION "00.00.08.01"
+!define COPYRIGHT "jslopezvilla  © 2016"
+!define DESCRIPTION "Multi-channel signals plotting and processing tool"
+!define INSTALLER_NAME "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Installer\setup_Datafuz_v0.8.1.exe"
+!define MAIN_APP_EXE "Datafuz.exe"
+!define INSTALL_TYPE "SetShellVarContext current"
+!define REG_ROOT "HKCU"
+!define REG_APP_PATH "Software\Microsoft\Windows\CurrentVersion\App Paths\${MAIN_APP_EXE}"
+!define UNINSTALL_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
+
+!define REG_START_MENU "Start Menu Folder"
+
+var SM_Folder
+
+######################################################################
+
+VIProductVersion  "${VERSION}"
+VIAddVersionKey "ProductName"  "${APP_NAME}"
+VIAddVersionKey "CompanyName"  "${COMP_NAME}"
+VIAddVersionKey "LegalCopyright"  "${COPYRIGHT}"
+VIAddVersionKey "FileDescription"  "${DESCRIPTION}"
+VIAddVersionKey "FileVersion"  "${VERSION}"
+
+######################################################################
+
+SetCompressor ZLIB
+Name "${APP_NAME}"
+Caption "${APP_NAME}"
+OutFile "${INSTALLER_NAME}"
+BrandingText "${APP_NAME}"
+XPStyle on
+InstallDirRegKey "${REG_ROOT}" "${REG_APP_PATH}" ""
+InstallDir "$PROGRAMFILES\Datafuz"
+
+######################################################################
+
+!include "MUI.nsh"
+
+!define MUI_ABORTWARNING
+!define MUI_UNABORTWARNING
+
+!insertmacro MUI_PAGE_WELCOME
+
+!ifdef LICENSE_TXT
+!insertmacro MUI_PAGE_LICENSE "${LICENSE_TXT}"
+!endif
+
+!insertmacro MUI_PAGE_DIRECTORY
+
+!ifdef REG_START_MENU
+!define MUI_STARTMENUPAGE_NODISABLE
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Datafuz"
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "${REG_ROOT}"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "${UNINSTALL_PATH}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${REG_START_MENU}"
+!insertmacro MUI_PAGE_STARTMENU Application $SM_Folder
+!endif
+
+!insertmacro MUI_PAGE_INSTFILES
+
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_APP_EXE}"
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!insertmacro MUI_UNPAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
+
+######################################################################
+
+Section -MainProgram
+${INSTALL_TYPE}
+SetOverwrite ifnewer
+SetOutPath "$INSTDIR"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\x64\Release\Datafuz.exe"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\d3dcompiler_47.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\icudt54.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\icuin54.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\icuuc54.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\libEGL.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\libfftw3-3.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\libfftw3f-3.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\libfftw3l-3.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\libGLESv2.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\opengl32sw.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DCore.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DInput.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DLogic.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DQuick.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DQuickInput.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DQuickRender.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt53DRender.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Bluetooth.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5CLucene.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Concurrent.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Core.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5DBus.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Designer.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5DesignerComponents.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Gui.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Help.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5LabsTemplates.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Location.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Multimedia.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5MultimediaQuick_p.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5MultimediaWidgets.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Network.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Nfc.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5OpenGL.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Positioning.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5PrintSupport.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Qml.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Quick.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5QuickParticles.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5QuickTest.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5QuickWidgets.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Script.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5ScriptTools.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Sensors.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5SerialBus.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5SerialPort.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Sql.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Svg.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Test.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebChannel.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebEngine.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebEngineCore.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebEngineWidgets.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebSockets.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WebView.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Widgets.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5WinExtras.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5Xml.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\Qt5XmlPatterns.dll"
+SetOutPath "$INSTDIR\platforms"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qminimal.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qminimald.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qminimald.pdb"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qoffscreen.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qoffscreend.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qoffscreend.pdb"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qwindows.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qwindowsd.dll"
+File "C:\Users\jslopezvilla\Documents\Vibrations\datafuz\Runtime\platforms\qwindowsd.pdb"
+SectionEnd
+
+######################################################################
+
+Section -Icons_Reg
+SetOutPath "$INSTDIR"
+WriteUninstaller "$INSTDIR\uninstall.exe"
+
+!ifdef REG_START_MENU
+!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+CreateDirectory "$SMPROGRAMS\$SM_Folder"
+CreateShortCut "$SMPROGRAMS\$SM_Folder\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
+CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
+CreateShortCut "$SMPROGRAMS\$SM_Folder\Uninstall ${APP_NAME}.lnk" "$INSTDIR\uninstall.exe"
+
+!ifdef WEB_SITE
+WriteIniStr "$INSTDIR\${APP_NAME} website.url" "InternetShortcut" "URL" "${WEB_SITE}"
+CreateShortCut "$SMPROGRAMS\$SM_Folder\${APP_NAME} Website.lnk" "$INSTDIR\${APP_NAME} website.url"
+!endif
+!insertmacro MUI_STARTMENU_WRITE_END
+!endif
+
+!ifndef REG_START_MENU
+CreateDirectory "$SMPROGRAMS\Datafuz"
+CreateShortCut "$SMPROGRAMS\Datafuz\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
+CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
+CreateShortCut "$SMPROGRAMS\Datafuz\Uninstall ${APP_NAME}.lnk" "$INSTDIR\uninstall.exe"
+
+!ifdef WEB_SITE
+WriteIniStr "$INSTDIR\${APP_NAME} website.url" "InternetShortcut" "URL" "${WEB_SITE}"
+CreateShortCut "$SMPROGRAMS\Datafuz\${APP_NAME} Website.lnk" "$INSTDIR\${APP_NAME} website.url"
+!endif
+!endif
+
+WriteRegStr ${REG_ROOT} "${REG_APP_PATH}" "" "$INSTDIR\${MAIN_APP_EXE}"
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayName" "${APP_NAME}"
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "UninstallString" "$INSTDIR\uninstall.exe"
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayIcon" "$INSTDIR\${MAIN_APP_EXE}"
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayVersion" "${VERSION}"
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "Publisher" "${COMP_NAME}"
+
+!ifdef WEB_SITE
+WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "URLInfoAbout" "${WEB_SITE}"
+!endif
+SectionEnd
+
+######################################################################
+
+Section Uninstall
+${INSTALL_TYPE}
+Delete "$INSTDIR\${MAIN_APP_EXE}"
+Delete "$INSTDIR\d3dcompiler_47.dll"
+Delete "$INSTDIR\icudt54.dll"
+Delete "$INSTDIR\icuin54.dll"
+Delete "$INSTDIR\icuuc54.dll"
+Delete "$INSTDIR\libEGL.dll"
+Delete "$INSTDIR\libfftw3-3.dll"
+Delete "$INSTDIR\libfftw3f-3.dll"
+Delete "$INSTDIR\libfftw3l-3.dll"
+Delete "$INSTDIR\libGLESv2.dll"
+Delete "$INSTDIR\opengl32sw.dll"
+Delete "$INSTDIR\Qt53DCore.dll"
+Delete "$INSTDIR\Qt53DInput.dll"
+Delete "$INSTDIR\Qt53DLogic.dll"
+Delete "$INSTDIR\Qt53DQuick.dll"
+Delete "$INSTDIR\Qt53DQuickInput.dll"
+Delete "$INSTDIR\Qt53DQuickRender.dll"
+Delete "$INSTDIR\Qt53DRender.dll"
+Delete "$INSTDIR\Qt5Bluetooth.dll"
+Delete "$INSTDIR\Qt5CLucene.dll"
+Delete "$INSTDIR\Qt5Concurrent.dll"
+Delete "$INSTDIR\Qt5Core.dll"
+Delete "$INSTDIR\Qt5DBus.dll"
+Delete "$INSTDIR\Qt5Designer.dll"
+Delete "$INSTDIR\Qt5DesignerComponents.dll"
+Delete "$INSTDIR\Qt5Gui.dll"
+Delete "$INSTDIR\Qt5Help.dll"
+Delete "$INSTDIR\Qt5LabsTemplates.dll"
+Delete "$INSTDIR\Qt5Location.dll"
+Delete "$INSTDIR\Qt5Multimedia.dll"
+Delete "$INSTDIR\Qt5MultimediaQuick_p.dll"
+Delete "$INSTDIR\Qt5MultimediaWidgets.dll"
+Delete "$INSTDIR\Qt5Network.dll"
+Delete "$INSTDIR\Qt5Nfc.dll"
+Delete "$INSTDIR\Qt5OpenGL.dll"
+Delete "$INSTDIR\Qt5Positioning.dll"
+Delete "$INSTDIR\Qt5PrintSupport.dll"
+Delete "$INSTDIR\Qt5Qml.dll"
+Delete "$INSTDIR\Qt5Quick.dll"
+Delete "$INSTDIR\Qt5QuickParticles.dll"
+Delete "$INSTDIR\Qt5QuickTest.dll"
+Delete "$INSTDIR\Qt5QuickWidgets.dll"
+Delete "$INSTDIR\Qt5Script.dll"
+Delete "$INSTDIR\Qt5ScriptTools.dll"
+Delete "$INSTDIR\Qt5Sensors.dll"
+Delete "$INSTDIR\Qt5SerialBus.dll"
+Delete "$INSTDIR\Qt5SerialPort.dll"
+Delete "$INSTDIR\Qt5Sql.dll"
+Delete "$INSTDIR\Qt5Svg.dll"
+Delete "$INSTDIR\Qt5Test.dll"
+Delete "$INSTDIR\Qt5WebChannel.dll"
+Delete "$INSTDIR\Qt5WebEngine.dll"
+Delete "$INSTDIR\Qt5WebEngineCore.dll"
+Delete "$INSTDIR\Qt5WebEngineWidgets.dll"
+Delete "$INSTDIR\Qt5WebSockets.dll"
+Delete "$INSTDIR\Qt5WebView.dll"
+Delete "$INSTDIR\Qt5Widgets.dll"
+Delete "$INSTDIR\Qt5WinExtras.dll"
+Delete "$INSTDIR\Qt5Xml.dll"
+Delete "$INSTDIR\Qt5XmlPatterns.dll"
+Delete "$INSTDIR\platforms\qminimal.dll"
+Delete "$INSTDIR\platforms\qminimald.dll"
+Delete "$INSTDIR\platforms\qminimald.pdb"
+Delete "$INSTDIR\platforms\qoffscreen.dll"
+Delete "$INSTDIR\platforms\qoffscreend.dll"
+Delete "$INSTDIR\platforms\qoffscreend.pdb"
+Delete "$INSTDIR\platforms\qwindows.dll"
+Delete "$INSTDIR\platforms\qwindowsd.dll"
+Delete "$INSTDIR\platforms\qwindowsd.pdb"
+ 
+RmDir "$INSTDIR\platforms"
+ 
+Delete "$INSTDIR\uninstall.exe"
+!ifdef WEB_SITE
+Delete "$INSTDIR\${APP_NAME} website.url"
+!endif
+
+RmDir "$INSTDIR"
+
+!ifdef REG_START_MENU
+!insertmacro MUI_STARTMENU_GETFOLDER "Application" $SM_Folder
+Delete "$SMPROGRAMS\$SM_Folder\${APP_NAME}.lnk"
+Delete "$SMPROGRAMS\$SM_Folder\Uninstall ${APP_NAME}.lnk"
+!ifdef WEB_SITE
+Delete "$SMPROGRAMS\$SM_Folder\${APP_NAME} Website.lnk"
+!endif
+Delete "$DESKTOP\${APP_NAME}.lnk"
+
+RmDir "$SMPROGRAMS\$SM_Folder"
+!endif
+
+!ifndef REG_START_MENU
+Delete "$SMPROGRAMS\Datafuz\${APP_NAME}.lnk"
+Delete "$SMPROGRAMS\Datafuz\Uninstall ${APP_NAME}.lnk"
+!ifdef WEB_SITE
+Delete "$SMPROGRAMS\Datafuz\${APP_NAME} Website.lnk"
+!endif
+Delete "$DESKTOP\${APP_NAME}.lnk"
+
+RmDir "$SMPROGRAMS\Datafuz"
+!endif
+
+DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
+DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+SectionEnd
+
+######################################################################
+

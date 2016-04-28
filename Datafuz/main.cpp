@@ -15,6 +15,6 @@ int main(int argc, char *argv[])
 	QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 	
 	Datafuz w;
-	w.show();
+	w.showMaximized();
 	return app.exec();
 }
