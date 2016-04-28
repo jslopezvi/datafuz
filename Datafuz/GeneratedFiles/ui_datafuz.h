@@ -40,10 +40,11 @@ public:
     QVBoxLayout *verticalLayout_2;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout_2;
-    QLineEdit *lineEdit;
-    QPushButton *pushButton;
+    QLineEdit *signals_file_path;
+    QPushButton *load_file_button;
+    QPushButton *signals_config_button;
     QHBoxLayout *horizontalLayout;
-    QTabWidget *tabWidget;
+    QTabWidget *signals_tab_widget;
     QWidget *tab;
     QHBoxLayout *horizontalLayout_3;
     QVBoxLayout *verticalLayout_3;
@@ -51,11 +52,15 @@ public:
     QSpacerItem *horizontalSpacer_3;
     QLabel *label;
     QComboBox *vib_channel_n;
-    QSpacerItem *horizontalSpacer;
-    QLabel *label_2;
-    QLineEdit *lineEdit_2;
     QSpacerItem *horizontalSpacer_5;
     QCheckBox *plot_freq_check;
+    QSpacerItem *horizontalSpacer;
+    QLabel *fs_label;
+    QLineEdit *fs_val;
+    QSpacerItem *horizontalSpacer_6;
+    QCheckBox *show_x_vals_check;
+    QSpacerItem *horizontalSpacer_7;
+    QCheckBox *show_y_vals_check;
     QSpacerItem *horizontalSpacer_2;
     QPushButton *update_vibrations_opts;
     QSpacerItem *horizontalSpacer_4;
@@ -95,15 +100,20 @@ public:
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        lineEdit = new QLineEdit(centralWidget);
-        lineEdit->setObjectName(QStringLiteral("lineEdit"));
+        signals_file_path = new QLineEdit(centralWidget);
+        signals_file_path->setObjectName(QStringLiteral("signals_file_path"));
 
-        horizontalLayout_2->addWidget(lineEdit);
+        horizontalLayout_2->addWidget(signals_file_path);
 
-        pushButton = new QPushButton(centralWidget);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
+        load_file_button = new QPushButton(centralWidget);
+        load_file_button->setObjectName(QStringLiteral("load_file_button"));
 
-        horizontalLayout_2->addWidget(pushButton);
+        horizontalLayout_2->addWidget(load_file_button);
+
+        signals_config_button = new QPushButton(centralWidget);
+        signals_config_button->setObjectName(QStringLiteral("signals_config_button"));
+
+        horizontalLayout_2->addWidget(signals_config_button);
 
 
         verticalLayout->addLayout(horizontalLayout_2);
@@ -111,8 +121,8 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        tabWidget = new QTabWidget(centralWidget);
-        tabWidget->setObjectName(QStringLiteral("tabWidget"));
+        signals_tab_widget = new QTabWidget(centralWidget);
+        signals_tab_widget->setObjectName(QStringLiteral("signals_tab_widget"));
         tab = new QWidget();
         tab->setObjectName(QStringLiteral("tab"));
         horizontalLayout_3 = new QHBoxLayout(tab);
@@ -144,21 +154,6 @@ public:
 
         horizontalLayout_6->addWidget(vib_channel_n);
 
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        horizontalLayout_6->addItem(horizontalSpacer);
-
-        label_2 = new QLabel(tab);
-        label_2->setObjectName(QStringLiteral("label_2"));
-
-        horizontalLayout_6->addWidget(label_2);
-
-        lineEdit_2 = new QLineEdit(tab);
-        lineEdit_2->setObjectName(QStringLiteral("lineEdit_2"));
-        lineEdit_2->setMaximumSize(QSize(50, 16777215));
-
-        horizontalLayout_6->addWidget(lineEdit_2);
-
         horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout_6->addItem(horizontalSpacer_5);
@@ -167,6 +162,39 @@ public:
         plot_freq_check->setObjectName(QStringLiteral("plot_freq_check"));
 
         horizontalLayout_6->addWidget(plot_freq_check);
+
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer);
+
+        fs_label = new QLabel(tab);
+        fs_label->setObjectName(QStringLiteral("fs_label"));
+
+        horizontalLayout_6->addWidget(fs_label);
+
+        fs_val = new QLineEdit(tab);
+        fs_val->setObjectName(QStringLiteral("fs_val"));
+        fs_val->setMaximumSize(QSize(50, 16777215));
+
+        horizontalLayout_6->addWidget(fs_val);
+
+        horizontalSpacer_6 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer_6);
+
+        show_x_vals_check = new QCheckBox(tab);
+        show_x_vals_check->setObjectName(QStringLiteral("show_x_vals_check"));
+
+        horizontalLayout_6->addWidget(show_x_vals_check);
+
+        horizontalSpacer_7 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer_7);
+
+        show_y_vals_check = new QCheckBox(tab);
+        show_y_vals_check->setObjectName(QStringLiteral("show_y_vals_check"));
+
+        horizontalLayout_6->addWidget(show_y_vals_check);
 
         horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -234,7 +262,7 @@ public:
 
         horizontalLayout_3->addLayout(verticalLayout_3);
 
-        tabWidget->addTab(tab, QString());
+        signals_tab_widget->addTab(tab, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
         horizontalLayout_4 = new QHBoxLayout(tab_2);
@@ -247,7 +275,7 @@ public:
 
         horizontalLayout_4->addLayout(verticalLayout_4);
 
-        tabWidget->addTab(tab_2, QString());
+        signals_tab_widget->addTab(tab_2, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QStringLiteral("tab_3"));
         horizontalLayout_5 = new QHBoxLayout(tab_3);
@@ -260,9 +288,9 @@ public:
 
         horizontalLayout_5->addLayout(verticalLayout_5);
 
-        tabWidget->addTab(tab_3, QString());
+        signals_tab_widget->addTab(tab_3, QString());
 
-        horizontalLayout->addWidget(tabWidget);
+        horizontalLayout->addWidget(signals_tab_widget);
 
 
         verticalLayout->addLayout(horizontalLayout);
@@ -284,7 +312,7 @@ public:
 
         retranslateUi(DatafuzClass);
 
-        tabWidget->setCurrentIndex(0);
+        signals_tab_widget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(DatafuzClass);
@@ -293,7 +321,8 @@ public:
     void retranslateUi(QMainWindow *DatafuzClass)
     {
         DatafuzClass->setWindowTitle(QApplication::translate("DatafuzClass", "Datafuz", 0));
-        pushButton->setText(QApplication::translate("DatafuzClass", "Load File", 0));
+        load_file_button->setText(QApplication::translate("DatafuzClass", "Load File", 0));
+        signals_config_button->setText(QApplication::translate("DatafuzClass", "Signals Config", 0));
         label->setText(QApplication::translate("DatafuzClass", "Channels", 0));
         vib_channel_n->clear();
         vib_channel_n->insertItems(0, QStringList()
@@ -305,13 +334,15 @@ public:
          << QApplication::translate("DatafuzClass", "6", 0)
          << QApplication::translate("DatafuzClass", "7", 0)
         );
-        label_2->setText(QApplication::translate("DatafuzClass", "Fs", 0));
         plot_freq_check->setText(QApplication::translate("DatafuzClass", "Plot frequency", 0));
+        fs_label->setText(QApplication::translate("DatafuzClass", "Fs", 0));
+        show_x_vals_check->setText(QApplication::translate("DatafuzClass", "Show X values", 0));
+        show_y_vals_check->setText(QApplication::translate("DatafuzClass", "Show Y values", 0));
         update_vibrations_opts->setText(QApplication::translate("DatafuzClass", "Update", 0));
         sel_vib_channels_grbox->setTitle(QApplication::translate("DatafuzClass", "Selected Channels", 0));
-        tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("DatafuzClass", "Vibrations", 0));
-        tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("DatafuzClass", "Flow", 0));
-        tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("DatafuzClass", "Load && Pression", 0));
+        signals_tab_widget->setTabText(signals_tab_widget->indexOf(tab), QApplication::translate("DatafuzClass", "Vibrations", 0));
+        signals_tab_widget->setTabText(signals_tab_widget->indexOf(tab_2), QApplication::translate("DatafuzClass", "Flow", 0));
+        signals_tab_widget->setTabText(signals_tab_widget->indexOf(tab_3), QApplication::translate("DatafuzClass", "Load && Pressure", 0));
     } // retranslateUi
 
 };
